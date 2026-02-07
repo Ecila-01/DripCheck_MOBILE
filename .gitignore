@@ -26,3 +26,10 @@ yarn-error.log*
 # Misc
 *.pem
 
+# Backend
+backend/node_modules
+backend/.env
+
+# General
+node_modules
+.env

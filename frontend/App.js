@@ -18,6 +18,14 @@ import HomeScreen from './screens/HomeScreen';
 import ClosetScreen from './screens/ClosetScreen';
 import TrendScreen from './screens/TrendScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Platform } from 'react-native';
+
+const API_URL =
+  Platform.OS === 'web'
+    ? 'http://localhost:3000'
+    : 'http://192.168.100.9:3000';
+
 
 // Landing Screen
 const LandingScreen = ({ navigation }) => (
@@ -55,7 +63,7 @@ const LandingScreen = ({ navigation }) => (
 );
 
 // Login Screen
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation, setUser }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -140,14 +148,35 @@ const LoginScreen = ({ navigation }) => {
             {/* Log In Button */}
             <TouchableOpacity
               style={styles.loginButton}
-              onPress={() => {
-                // Hardcoded login: user@gmail.com / 1
-                if (email === 'user@gmail.com' && password === '1') {
+              onPress={async () => {
+                if (!email || !password) {
+                  alert('Please enter email and password');
+                  return;
+                }
+
+                try {
+                  const res = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                  });
+
+                  const data = await res.json();
+
+                  if (!res.ok) {
+                    alert(data.message || 'Login failed');
+                    return;
+                  }
+
+                  // ✅ STORE USER GLOBALLY
+                  setUser(data.user);
+
                   navigation.replace('Dashboard');
-                } else {
-                  alert('Invalid credentials. Use: user@gmail.com / 1');
+                } catch (err) {
+                  alert('Network error: ' + err.message);
                 }
               }}
+
               activeOpacity={0.8}
             >
               <Text style={styles.loginButtonText}>Log In</Text>
@@ -172,6 +201,7 @@ const LoginScreen = ({ navigation }) => {
 
 // Sign Up Screen
 const SignUpScreen = ({ navigation }) => {
+  const [loading, setLoading] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -259,16 +289,40 @@ const SignUpScreen = ({ navigation }) => {
               {/* Sign Up Button */}
               <TouchableOpacity
                 style={styles.loginButton}
-                onPress={() => {
-                  if (name && email && password) {
-                    navigation.replace('Dashboard');
-                  } else {
+                onPress={async () => {
+                  if (!name || !email || !password) {
                     alert('Please fill in all fields');
+                    return;
+                  }
+
+                  setLoading(true);
+                  try {
+                    const res = await fetch(`${API_URL}/api/auth/register`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ name, email, password }),
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                      alert(data.message || 'Registration failed');
+                      return;
+                    }
+
+                    alert('Registered successfully!');
+                    navigation.replace('Login');
+                  } catch (err) {
+                    alert('Network error: ' + err.message);
+                  } finally {
+                    setLoading(false);
                   }
                 }}
                 activeOpacity={0.8}
               >
-                <Text style={styles.loginButtonText}>Sign Up</Text>
+                <Text style={styles.loginButtonText}>
+                  {loading ? 'Signing Up...' : 'Sign Up'}
+                </Text>
               </TouchableOpacity>
 
               {/* Already have an account? Login */}
@@ -290,19 +344,19 @@ const SignUpScreen = ({ navigation }) => {
 };
 
 // Dashboard Screen with Tab Navigation
-const DashboardScreen = ({ onLogout }) => {
+const DashboardScreen = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState('Home');
 
   const renderTabContent = () => {
     switch (activeTab) {
       case 'Home':
-        return <HomeScreen onLogout={onLogout} />;
+        return <HomeScreen user={user} onLogout={onLogout} />;
       case 'Closet':
         return <ClosetScreen setActiveTab={setActiveTab} />;
       case 'Trend':
         return <TrendScreen />;
       case 'Profile':
-        return <ProfileScreen />;
+        return <ProfileScreen user={user} />;
       default:
         return <HomeScreen onLogout={onLogout} />;
     }
@@ -319,6 +373,7 @@ const DashboardScreen = ({ onLogout }) => {
 // Main App with Navigation
 export default function App() {
   const [screen, setScreen] = useState('Landing');
+  const [user, setUser] = useState(null); // 👈 STORE LOGGED-IN USER
 
   const renderScreen = () => {
     switch (screen) {
@@ -334,12 +389,14 @@ export default function App() {
       case 'Login':
         return (
           <LoginScreen
+            setUser={setUser}
             navigation={{
               goBack: () => setScreen('Landing'),
               replace: (target) => setScreen(target),
             }}
           />
         );
+
       case 'SignUp':
         return (
           <SignUpScreen
@@ -350,7 +407,16 @@ export default function App() {
           />
         );
       case 'Dashboard':
-        return <DashboardScreen onLogout={() => setScreen('Landing')} />;
+        return (
+          <DashboardScreen
+            user={user}
+            onLogout={() => {
+              setUser(null);
+              setScreen('Landing');
+            }}
+          />
+        );
+
       default:
         return (
           <LandingScreen
@@ -363,7 +429,12 @@ export default function App() {
     }
   };
 
-  return renderScreen();
+  return (
+    <SafeAreaProvider>
+      {renderScreen()}
+    </SafeAreaProvider>
+  );
+
 }
 
 const styles = StyleSheet.create({

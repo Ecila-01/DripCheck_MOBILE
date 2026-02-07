@@ -10,7 +10,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import colors from '../constants/colors';
 
-const ProfileScreen = () => {
+const ProfileScreen = ({user}) => {
   return (
     <LinearGradient
       colors={[colors.offWhiteBackground, colors.mainWhite]}
@@ -28,7 +28,7 @@ const ProfileScreen = () => {
           </View>
 
           {/* Handle */}
-          <Text style={styles.handle}>@User</Text>
+          <Text style={styles.handle}>{user.name}</Text>
 
           {/* Edit Profile Button */}
           <TouchableOpacity

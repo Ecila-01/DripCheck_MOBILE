@@ -12,7 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import colors from '../constants/colors';
 import OutfitCard from '../components/OutfitCard';
 
-const HomeScreen = ({ onLogout }) => {
+const HomeScreen = ({ user, onLogout }) => {
   return (
     <LinearGradient
       colors={[colors.offWhiteBackground, colors.mainWhite]}
