@@ -4,7 +4,6 @@ const Account = require('../models/Account');
 
 const router = express.Router();
 
-// REGISTER (with hashing)
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -22,7 +21,7 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // 🔐 hash password
+    //password hashing w bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = new Account({
@@ -60,8 +59,6 @@ router.post('/login', async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
-
-    // send back basic user info (no password)
     return res.json({
       message: 'Login successful',
       user: {

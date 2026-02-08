@@ -373,7 +373,7 @@ const DashboardScreen = ({ user, onLogout }) => {
 // Main App with Navigation
 export default function App() {
   const [screen, setScreen] = useState('Landing');
-  const [user, setUser] = useState(null); // 👈 STORE LOGGED-IN USER
+  const [user, setUser] = useState(null);
 
   const renderScreen = () => {
     switch (screen) {
