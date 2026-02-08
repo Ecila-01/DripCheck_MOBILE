@@ -27,11 +27,21 @@ app.get('/', (req, res) => {
 });
 
 // start server
+const os = require('os');
+
+// start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}`);
+
+  const interfaces = os.networkInterfaces();
+
+  Object.values(interfaces).forEach((iface) => {
+    iface.forEach((details) => {
+      if (details.family === 'IPv4' && !details.internal) {
+        console.log(`🌐 Backend available at: http://${details.address}:${PORT}`);
+      }
+    });
+  });
 });
