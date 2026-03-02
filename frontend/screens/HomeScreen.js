@@ -172,7 +172,7 @@ export default function HomeScreen({ user, onLogout }) {
         </View>
 
         {/* Outfit of the Day Card */}
-        <OutfitCard onPress={() => console.log('Find Affordable Matches')} />
+        <OutfitCard onPress={() => console.log('Find Affordable Matches')} weatherMain={weather?.main}/>
       </SafeAreaView>
     </LinearGradient>
   );
