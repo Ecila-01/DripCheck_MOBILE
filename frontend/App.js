@@ -24,7 +24,7 @@ import { Platform } from 'react-native';
 const API_URL =
   Platform.OS === 'web'
     ? 'http://localhost:3000'
-    : 'http://192.168.100.9:3000';
+    : 'http://192.168.100.113:3000';
 
 
 // Landing Screen
