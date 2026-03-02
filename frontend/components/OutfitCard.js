@@ -1,18 +1,67 @@
-import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import colors from '../constants/colors';
-
+import OutfitModal from './OutfitModal';
+import React, { useState } from 'react';
 // Reusable Outfit Card Component
-const OutfitCard = ({ onPress }) => {
+const OutfitCard = ({weatherMain }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  function getOutfitIcon(weatherMain) {
+    switch (weatherMain) {
+      case 'Rain':
+      case 'Drizzle':
+        return '🧥'; // jacket
+      case 'Clear':
+        return '👕'; // t-shirt
+      case 'Clouds':
+        return '🧢'; // casual
+      case 'Snow':
+        return '🧣'; // winter
+      case 'Thunderstorm':
+        return '🥾'; // boots
+      default:
+        return '👔'; // fallback
+    }
+  }
+  function getOutfitLabel(weatherMain) {
+  switch (weatherMain) {
+    case 'Rain':
+    case 'Drizzle':
+      return 'Rainy Outfit';
+    case 'Clear':
+      return 'Casual Fit';
+    case 'Clouds':
+      return 'Comfy Casual';
+    case 'Snow':
+      return 'Winter Wear';
+    case 'Thunderstorm':
+      return 'Rugged Fit';
+    default:
+      return 'Classic Style';
+  }
+}
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Outfit of the Day</Text>
       <View style={styles.placeholder}>
-        <Text style={styles.icon}>👔</Text>
+        <Text style={styles.icon}>
+          {getOutfitIcon(weatherMain)}
+        </Text>
+        <Text style={styles.outfitLabel}>
+          {getOutfitLabel(weatherMain)}
+        </Text>
       </View>
-      <TouchableOpacity style={styles.button} onPress={onPress} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={styles.button}
+        activeOpacity={0.8}
+        onPress={() => setModalVisible(true)}
+      >
         <Text style={styles.buttonText}>Find Affordable Matches</Text>
       </TouchableOpacity>
+      <OutfitModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        weatherMain={weatherMain}
+      />
     </View>
   );
 };
@@ -73,6 +122,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.5,
+  },
+  outfitLabel: {
+    marginTop: 12,
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  label: {
+    marginTop: 10,
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textSecondary,
   },
 });
 
