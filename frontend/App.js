@@ -24,7 +24,7 @@ import { Platform } from 'react-native';
 const API_URL =
   Platform.OS === 'web'
     ? 'http://localhost:3000'
-    : 'http://192.168.100.9:3000';
+    : 'http://192.168.2.114:3000';
 
 
 // Landing Screen
@@ -352,11 +352,11 @@ const DashboardScreen = ({ user, onLogout }) => {
       case 'Home':
         return <HomeScreen user={user} onLogout={onLogout} />;
       case 'Closet':
-        return <ClosetScreen setActiveTab={setActiveTab} />;
+        return <ClosetScreen user={user} API_URL ={API_URL} setActiveTab={setActiveTab} />;
       case 'Trend':
         return <TrendScreen />;
       case 'Profile':
-        return <ProfileScreen user={user} />;
+        return <ProfileScreen user={user} API_URL ={API_URL} />;
       default:
         return <HomeScreen onLogout={onLogout} />;
     }

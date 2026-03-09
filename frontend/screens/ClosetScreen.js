@@ -30,12 +30,7 @@ const categories = [
   'Traditional',
 ];
 
-const API_URL =
-  Platform.OS === 'web'
-    ? 'http://localhost:3000'
-    : 'http://192.168.100.9:3000';
-
-const ClosetScreen = ({ setActiveTab }) => {
+const ClosetScreen = ({ setActiveTab, user, API_URL }) => {
   const [clothingItems, setClothingItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,14 +59,20 @@ const ClosetScreen = ({ setActiveTab }) => {
     }
   };
   useEffect(() => {
-    fetchClothingItems();
-  }, []);
+    if (user?.id) {
+      fetchClothingItems();
+    }
+  }, [user]);
 
   const fetchClothingItems = async (showLoader = true) => {
     try {
+      if (!user?.id) {
+        setClothingItems([]);
+        return;
+      }
       if (showLoader) setLoadingItems(true);
-
-      const response = await fetch(`${API_URL}/api/clothing`);
+      
+      const response = await fetch(`${API_URL}/api/clothing?userId=${user.id}`);
       const data = await response.json();
 
       if (!response.ok) {
@@ -167,7 +168,10 @@ const ClosetScreen = ({ setActiveTab }) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        ...payload,
+        userId: user.id,
+      }),
     });
 
     const data = await response.json();
@@ -185,7 +189,10 @@ const ClosetScreen = ({ setActiveTab }) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        ...payload,
+        userId: user.id,
+      }),
     });
 
     const data = await response.json();
@@ -198,6 +205,10 @@ const ClosetScreen = ({ setActiveTab }) => {
   };
 
   const handleSaveItem = async () => {
+    if (!user?.id) {
+      Alert.alert('Error', 'No logged-in user found');
+      return;
+    }
     if (!itemForm.name.trim()) {
       Alert.alert('Error', 'Please enter an item name');
       return;
@@ -278,9 +289,12 @@ const ClosetScreen = ({ setActiveTab }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              const response = await fetch(`${API_URL}/api/clothing/${itemId}`, {
-                method: 'DELETE',
-              });
+              const response = await fetch(
+                `${API_URL}/api/clothing/${itemId}?userId=${user.id}`,
+                {
+                  method: 'DELETE',
+                }
+              );
 
               const data = await response.json();
 
@@ -312,7 +326,10 @@ const ClosetScreen = ({ setActiveTab }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ favorite: updatedFavorite }),
+        body: JSON.stringify({
+          userId: user.id,
+          favorite: updatedFavorite,
+        }),
       });
 
       const data = await response.json();
