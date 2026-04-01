@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import colors from '../constants/colors';
 
-// Reusable Trend Card Component
 const TrendCard = ({ icon, title }) => {
   return (
     <View style={styles.card}>
