@@ -22,6 +22,8 @@ mongoose
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB error:', err));
 
+app.get('/ping', (req, res) => res.status(200).send('ok'));
+
 app.get('/', (req, res) => {
   res.send('Backend is running 🚀');
 });
