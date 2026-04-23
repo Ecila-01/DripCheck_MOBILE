@@ -49,7 +49,7 @@ export default function OutfitCard({ user, weather, onPressMatches, API_URL }) {
     
     try {
       const userId = user._id || user.id || 'guest';
-      const res = await fetch(`${API_URL}/api/clothings/recommend/${userId}?temp=${weather.tempC}&condition=${weather.main}`);
+      const res = await fetch(`${API_URL}/api/clothing/recommend/${userId}?temp=${weather.tempC}&condition=${weather.main}`);
       const data = await res.json();
 
       if (res.ok && data.outfit) {

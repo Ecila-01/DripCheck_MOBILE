@@ -20,7 +20,7 @@ const ProfileScreen = ({ user, API_URL }) => {
   useEffect(() => {
     const fetchProfileStats = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/outfits?userId=${user.id}`);
+        const response = await fetch(`${API_URL}/api/clothing?userId=${user.id}`);
         const data = await response.json();
         if (response.ok) {
           setOutfitCount(data.length);
