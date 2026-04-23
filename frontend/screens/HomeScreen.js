@@ -146,7 +146,7 @@ export default function HomeScreen({ user, onLogout, API_URL }) {
               />
             </View>
             <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-              <Text style={styles.logoutText}>Logout</Text>
+              <Text style={styles.logoutText}>Sign Out</Text>
             </TouchableOpacity>
           </View>
 

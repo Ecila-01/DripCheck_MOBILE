@@ -71,6 +71,30 @@ router.post('/login', async (req, res) => {
     return res.status(500).json({ message: err.message });
   }
 });
+const Account = require('../models/Account');
 
+// Update Profile (Image and Name)
+router.put('/update/:id', async (req, res) => {
+  try {
+    const { name, profileImage, password } = req.body;
+    let updateData = { name, profileImage };
+
+    // If password is being changed, hash it first!
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
+
+    const updatedUser = await Account.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    ).select('-password');
+
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 module.exports = router;

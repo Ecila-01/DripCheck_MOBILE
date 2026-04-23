@@ -21,8 +21,12 @@ const accountSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
     },
+    // ADD THIS LINE
+    profileImage: {
+      type: String,
+      default: '', 
+    },
   },
   { timestamps: true }
 );
-
 module.exports = mongoose.model('Account', accountSchema);
