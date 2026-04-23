@@ -8,7 +8,6 @@ const os = require('os');
 const clothingRoutes = require('./routes/clothing');
 const authRoutes = require('./routes/auth');
 const trendsRoute = require('./routes/trends');
-const outfitsRoute = require('./routes/outfits');
 const app = express();
 
 app.use(cors());
@@ -17,7 +16,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/clothing', clothingRoutes);
 app.use('/api/trends', trendsRoute);
-app.use('/api/outfits', outfitsRoute);
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log('✅ MongoDB connected'))
