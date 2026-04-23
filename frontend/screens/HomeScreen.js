@@ -346,7 +346,28 @@ export default function HomeScreen({ user, onLogout, API_URL, setUser }) {
 
               <TouchableOpacity 
                 style={styles.secondaryBtn} 
-                onPress={() => setShowNotifModal(false)}
+                onPress={async () => {
+                  setShowNotifModal(false); // Close immediately for good UX
+                  
+                  try {
+                    // Silently tell the backend to stop asking them
+                    const response = await fetch(`${API_URL}/api/auth/update/${user.id}`, {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ 
+                        hasSetPreferences: true 
+                        // We intentionally leave notificationTime blank here
+                      }),
+                    });
+                    
+                    if (response.ok) {
+                      const updatedUser = await response.json();
+                      if(setUser) setUser(updatedUser);
+                    }
+                  } catch (e) {
+                    console.log("Failed to dismiss preference", e);
+                  }
+                }}
               >
                 <Text style={styles.secondaryBtnText}>Maybe later</Text>
               </TouchableOpacity>

@@ -75,22 +75,28 @@ router.post('/login', async (req, res) => {
   }
 });
 // Update Profile (Image and Name)
+// Update Profile (Dynamic)
 router.put('/update/:id', async (req, res) => {
   try {
-    const { name, profileImage, password } = req.body;
-    let updateData = { name, profileImage };
+    // 1. Separate the password from the rest of the incoming data
+    const { password, ...restOfData } = req.body;
+    
+    // 2. Initialize updateData with whatever else was sent 
+    // (This automatically grabs name, profileImage, hasSetPreferences, notificationTime, etc.)
+    let updateData = { ...restOfData };
 
-    // If password is being changed, hash it first!
+    // 3. If a password was sent, hash it and add it to the update object
     if (password) {
       const salt = await bcrypt.genSalt(10);
       updateData.password = await bcrypt.hash(password, salt);
     }
 
+    // 4. Update the user
     const updatedUser = await Account.findByIdAndUpdate(
       req.params.id,
-      updateData,
-      { new: true }
-    ).select('-password');
+      { $set: updateData }, // $set ensures we only overwrite the provided fields
+      { new: true }         // Return the updated document
+    ).select('-password');  // Don't send the hashed password back to the frontend
 
     res.json(updatedUser);
   } catch (error) {
