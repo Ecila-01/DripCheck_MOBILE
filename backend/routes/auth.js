@@ -46,25 +46,31 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // ... validation and findUser logic ...
+    // 1. Find the user
+    const foundUser = await Account.findOne({ email }); // Rename to foundUser to be safe
+    if (!foundUser) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    // 2. Check password
+    const isMatch = await bcrypt.compare(password, foundUser.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
-    // 1. Convert the Mongoose document to a plain JS object
-    // 2. Destructure to remove password and __v
-    const { password: userPassword, __v, ...userData } = user._doc;
+    // 3. SECURE DATA EXTRACTION
+    // We use foundUser._doc to get the raw data from MongoDB
+    const { password: userPassword, __v, ...userData } = foundUser._doc;
 
     return res.json({
       message: 'Login successful',
       user: {
-        id: user._id, // Keep mapping _id to id for frontend consistency
-        ...userData   // Spreads everything else: name, email, profileImage, createdAt
+        id: foundUser._id,
+        ...userData 
       },
     });
   } catch (err) {
+    console.error("Login Error:", err);
     return res.status(500).json({ message: err.message });
   }
 });
