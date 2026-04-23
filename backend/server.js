@@ -4,7 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const os = require('os');
-
+const cors = require('cors')
 const clothingRoutes = require('./routes/clothing');
 const authRoutes = require('./routes/auth');
 const trendsRoute = require('./routes/trends');

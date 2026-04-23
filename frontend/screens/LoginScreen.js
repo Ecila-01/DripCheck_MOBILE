@@ -4,10 +4,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../constants/colors';
 import styles from '../styles/LoginScreenStyles';
-const API_URL =
-  Platform.OS === 'web'
-    ? 'http://localhost:3000'
-    : 'http://192.168.100.9:3000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+
 
 const LoginScreen = ({ navigation, setUser }) => {
   const [email, setEmail] = useState('');

@@ -7,10 +7,7 @@ import ClosetScreen from './ClosetScreen';
 import TrendScreen from './TrendScreen';
 import ProfileScreen from './ProfileScreen';
 
-const API_URL =
-  Platform.OS === 'web'
-    ? 'http://localhost:3000'
-    : 'http://192.168.100.9:3000'; //palitan dito ang ip
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const DashboardScreen = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState('Home');
