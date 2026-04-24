@@ -229,4 +229,89 @@ router.post('/reset-password-otp', async (req, res) => {
   }
 });
 
+router.post('/request-delete-otp', async (req, res) => {
+  try {
+    const { email, userId } = req.body;
+
+    // Verify the user exists using the provided ID
+    const user = await Account.findById(userId);
+    if (!user || user.email !== email) {
+      // Don't leak whether the account exists or not for security
+      return res.status(200).json({ message: 'If the account exists, an OTP was sent.' });
+    }
+
+    // Generate a 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+    // Save the OTP to the user document
+    user.resetOtp = otp;
+    user.resetOtpExpires = otpExpires;
+    await user.save();
+
+    // 💡 SEND THE ACTUAL EMAIL VIA NODEMAILER
+    const mailOptions = {
+      from: `"DripCheck App" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'DripCheck - Account Deletion Verification Code',
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; border: 1px solid #eaeaea; border-radius: 10px;">
+          <h2 style="color: #FF6B6B;">Account Deletion Request</h2>
+          <p>Hello ${user.name},</p>
+          <p>We received a request to permanently delete your DripCheck account. If you initiated this, please use the following 6-digit verification code to confirm the deletion:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #cc0000; background-color: #FFF0F0; padding: 15px 25px; border-radius: 8px;">
+              ${otp}
+            </span>
+          </div>
+          <p style="color: #888; font-size: 14px;"><strong>Warning:</strong> This action cannot be undone. All your closet data will be permanently removed.</p>
+          <p style="color: #888; font-size: 14px;">This code will expire in 15 minutes. If you did not request this, please change your password immediately.</p>
+          <p>The DripCheck Team</p>
+        </div>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Deletion OTP sent to ${email}`);
+
+    res.status(200).json({ message: 'OTP generated successfully' });
+  } catch (error) {
+    console.error("Request Delete OTP Error:", error);
+    res.status(500).json({ message: 'Server error while generating OTP' });
+  }
+});
+// DELETE: api/auth/delete-account/:id
+router.delete('/delete-account/:id', async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { otp } = req.body;
+
+    const user = await Account.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify OTP
+    if (!user.resetOtp || user.resetOtp !== otp) {
+        return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+    
+    // Check expiration
+    if (user.resetOtpExpires && Date.now() > user.resetOtpExpires) {
+         return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    // (Optional) Delete associated data here if you have other collections
+    // e.g., await Clothing.deleteMany({ userId: userId });
+
+    // Perform deletion
+    await Account.findByIdAndDelete(userId);
+
+    res.status(200).json({ message: "Account successfully deleted" });
+
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    res.status(500).json({ message: "Server error during account deletion" });
+  }
+});
 module.exports = router;

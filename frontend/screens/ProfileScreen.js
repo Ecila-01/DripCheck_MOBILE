@@ -42,6 +42,13 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
     confirmPassword: ''
   });
 
+  // --- NEW STATE FOR DELETION ---
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleteOtp, setDeleteOtp] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+
+
   // Sync form name and notification time if user object updates
   useEffect(() => {
     if (user?.name) setEditForm(prev => ({ ...prev, name: user.name }));
@@ -58,7 +65,7 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
   useEffect(() => {
     const fetchProfileStats = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/clothing?userId=${user.id}`);
+        const response = await fetch(`${API_URL}/api/clothing?userId=${user._id}`);
         const data = await response.json();
         if (response.ok) {
           setItemCount(data.length);
@@ -126,7 +133,7 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
       }
 
       // 3. Send to Backend
-      const response = await fetch(`${API_URL}/api/auth/update/${user.id}`, {
+      const response = await fetch(`${API_URL}/api/auth/update/${user._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -159,7 +166,62 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
       setUpdating(false);
     }
   };
+  const handleRequestDeleteOtp = async () => {
+    setIsDeleting(true);
+    try {
+      const uid = user._id || user.id;
+      // Assuming you have a route to trigger the email
+      const response = await fetch(`${API_URL}/api/auth/request-delete-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email, userId: uid }),
+      });
 
+      if (response.ok) {
+        setOtpSent(true);
+        Alert.alert("Check your email", "We've sent a code to confirm deletion.");
+      } else {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to send OTP.");
+      }
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteOtp.trim() || deleteOtp.length !== 6) {
+      return Alert.alert('Error', 'Please enter the 6-digit OTP');
+    }
+    executeDeletion();
+  };
+
+  const executeDeletion = async () => {
+    setIsDeleting(true);
+    try {
+      const uid = user._id || user.id;
+      const response = await fetch(`${API_URL}/api/auth/delete-account/${uid}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otp: deleteOtp }),
+      });
+
+      if (response.ok) {
+        Alert.alert("Account Deleted", "We're sorry to see you go.");
+        setDeleteModalVisible(false);
+        if (onLogout) onLogout(); // Use your existing logout function to clear state/navigate
+      } else {
+        const data = await response.json();
+        throw new Error(data.message || "Deletion failed.");
+      }
+    } catch (error) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
   return (
     <LinearGradient colors={[colors.offWhiteBackground, colors.mainWhite]} style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.offWhiteBackground} />
@@ -220,6 +282,7 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
             </View>
           </View>
 
+          {/* SIGN OUT BUTTON (Keep this prominent) */}
           <TouchableOpacity 
             style={styles.logoutButton} 
             onPress={onLogout || (() => console.log("Logout"))}
@@ -227,6 +290,15 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
             <Text style={styles.logoutButtonText}>Sign Out</Text>
           </TouchableOpacity>
 
+          {/* DELETE ACCOUNT (Make this subtle) */}
+          <TouchableOpacity 
+            style={{ marginTop: 25, paddingVertical: 10, alignItems: 'center' }} 
+            onPress={() => setDeleteModalVisible(true)}
+          >
+            <Text style={{ color: '#FF6B6B', fontSize: 14, fontWeight: '600' }}>
+              Delete Account
+            </Text>
+          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
 
@@ -352,6 +424,73 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
               
             </View>
           </ScrollView> 
+        </View>
+      </Modal>
+      {/* NEW DELETE ACCOUNT MODAL */}
+      <Modal visible={deleteModalVisible} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}> {/* Removed the hardcoded padding: 30 */}
+            
+            <View style={{ alignItems: 'center', marginBottom: 20 }}>
+              <View style={{ backgroundColor: '#FFF0F0', padding: 15, borderRadius: 50, marginBottom: 15 }}>
+                <Ionicons name="warning-outline" size={32} color="#FF6B6B" />
+              </View>
+              <Text style={[styles.modalTitle, { marginBottom: 5 }]}>Delete Account</Text>
+            </View>
+            
+            {!otpSent ? (
+              <>
+                <Text style={{ textAlign: 'center', color: colors.textSecondary, marginBottom: 25, lineHeight: 22 }}>
+                  Are you sure you want to delete your account? This will permanently remove your closet data.
+                </Text>
+                
+                <TouchableOpacity 
+                  style={[styles.saveBtn, { backgroundColor: '#FF6B6B' }]} 
+                  onPress={handleRequestDeleteOtp}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? <ActivityIndicator color="#fff"/> : <Text style={styles.saveBtnText}>Send OTP to Confirm</Text>}
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={{ textAlign: 'center', color: colors.textSecondary, marginBottom: 15, lineHeight: 22 }}>
+                  Please enter the 6-digit code sent to{"\n"}
+                  <Text style={{ fontWeight: 'bold', color: colors.textPrimary }}>{user.email}</Text>
+                </Text>
+                
+                <TextInput 
+                  style={[styles.input, { textAlign: 'center', fontSize: 24, letterSpacing: 8, paddingVertical: 15 }]}
+                  value={deleteOtp}
+                  onChangeText={setDeleteOtp}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  placeholder="••••••"
+                  placeholderTextColor={colors.textLight}
+                />
+                
+                <TouchableOpacity 
+                  style={[styles.saveBtn, { backgroundColor: '#FF6B6B', marginTop: 15 }]} 
+                  onPress={handleConfirmDelete}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? <ActivityIndicator color="#fff"/> : <Text style={styles.saveBtnText}>Permanently Delete</Text>}
+                </TouchableOpacity>
+              </>
+            )}
+
+            <TouchableOpacity 
+              style={{ marginTop: 20, alignItems: 'center', padding: 10 }}
+              onPress={() => {
+                setDeleteModalVisible(false);
+                setOtpSent(false);
+                setDeleteOtp('');
+              }}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+            
+          </View>
         </View>
       </Modal>
     </LinearGradient>

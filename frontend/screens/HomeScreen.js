@@ -58,7 +58,7 @@ export default function HomeScreen({ user, onLogout, API_URL, setUser }) {
       await scheduleDailyOutfitNotification(hours, minutes);
 
       // 2. Save to Backend
-      const response = await fetch(`${API_URL}/api/auth/update/${user.id}`, {
+      const response = await fetch(`${API_URL}/api/auth/update/${user._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -87,6 +87,7 @@ export default function HomeScreen({ user, onLogout, API_URL, setUser }) {
 
   // Trigger modal if user hasn't set preferences yet
   useEffect(() => {
+    console.log(user)
     // Only open if we definitely have a user AND their preference is explicitly false
     // Also check if the modal is already being hidden to prevent loops
     if (user && user.hasSetPreferences === false) {
@@ -258,18 +259,6 @@ export default function HomeScreen({ user, onLogout, API_URL, setUser }) {
             API_URL={API_URL}
             onPressMatches={() => setShowShops(true)} 
           />
-          <TouchableOpacity 
-            style={[styles.retryBtn, { backgroundColor: colors.primaryBlue, margin: 20 }]} 
-            onPress={async () => {
-              await testInstantNotification();
-              Alert.alert("Check your phone!", "A notification will appear in soon.");
-            }}
-          >
-            {/* Add the color and fontWeight here */}
-            <Text style={[styles.retryText, { color: colors.white, fontWeight: '700' }]}>
-              Test Instant Notification
-            </Text>
-          </TouchableOpacity>
         </ScrollView>
 
         <Modal
@@ -351,7 +340,7 @@ export default function HomeScreen({ user, onLogout, API_URL, setUser }) {
                   
                   try {
                     // Silently tell the backend to stop asking them
-                    const response = await fetch(`${API_URL}/api/auth/update/${user.id}`, {
+                    const response = await fetch(`${API_URL}/api/auth/update/${user._id}`, {
                       method: 'PUT',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ 

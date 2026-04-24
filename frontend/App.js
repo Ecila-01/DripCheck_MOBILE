@@ -51,44 +51,27 @@ export default function App() {
   const [isFirstLaunch, setIsFirstLaunch] = useState(null); // null means we are still checking
   usePermissionsWarmup();
   useEffect(() => {
-  const checkInitialState = async () => {
-    try {
-      // 1. Check if it's the first time launch
-      const hasLaunched = await AsyncStorage.getItem('hasLaunched');
-      
-      // 2. Check for a saved session
-      const sessionString = await AsyncStorage.getItem('user_session');
-      let savedUser = null;
+      const checkInitialState = async () => {
+        try {
+          // 1. Only check if it's the first time launch
+          const hasLaunched = await AsyncStorage.getItem('hasLaunched');
+          
+          // 2. We skip searching for 'user_session' entirely
+          // Every time the app opens, 'user' state will start as null
 
-      if (sessionString) {
-        const { user: userData, expiresAt } = JSON.parse(sessionString);
-        // Check if the session is still valid (not expired)
-        if (Date.now() < expiresAt) {
-          savedUser = userData;
-          setUser(userData); // Update your global 'user' state
-        } else {
-          // If expired, clean up
-          await AsyncStorage.removeItem('user_session');
+          if (hasLaunched === null) {
+            await AsyncStorage.setItem('hasLaunched', 'true');
+            setIsFirstLaunch(true);
+          } else {
+            setIsFirstLaunch(false);
+          }
+        } catch (error) {
+          console.error('Initial Load Error:', error);
+          setIsFirstLaunch(false);
         }
-      }
-
-      if (hasLaunched === null) {
-        await AsyncStorage.setItem('hasLaunched', 'true');
-        setIsFirstLaunch(true);
-      } else {
-        setIsFirstLaunch(false);
-      }
-      
-      // We keep isFirstLaunch to know if we show Landing or Login,
-      // but we use 'savedUser' to override everything and go to Dashboard.
-    } catch (error) {
-      console.error('Initial Load Error:', error);
-      setIsFirstLaunch(false);
-    }
-  };
-
-  checkInitialState();
-}, []);
+      };
+      checkInitialState();
+    }, []);
 
   // Show a blank screen or loading spinner while we check local storage
   if (isFirstLaunch === null) {
@@ -126,7 +109,6 @@ export default function App() {
                 user={user} 
                 setUser={setUser}
                 onLogout={async () => {
-                  await AsyncStorage.removeItem('user_session');
                   setUser(null); // Clear the user data
                   props.navigation.replace('Login'); // Kick them back to the login screen
                 }} 

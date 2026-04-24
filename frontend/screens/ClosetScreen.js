@@ -35,15 +35,15 @@ const ClosetScreen = ({ setActiveTab, user, API_URL }) => {
   });
 
   useEffect(() => {
-    if (user?.id) fetchItems();
+    if (user?._id) fetchItems();
   }, [user]);
 
   const fetchItems = async (showLoader = true) => {
-    if (!user?.id) return setClothingItems([]);
+    if (!user?._id) return setClothingItems([]);
     if (showLoader) setLoadingItems(true);
     
     try {
-      const items = await apiFetchClothing(API_URL, user.id);
+      const items = await apiFetchClothing(API_URL, user._id);
       setClothingItems(items);
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -114,11 +114,11 @@ const ClosetScreen = ({ setActiveTab, user, API_URL }) => {
       const payload = { ...itemForm, name: itemForm.name.trim(), color: itemForm.color.trim(), imageUri: finalImageUri };
 
       if (editingItem) {
-        const updatedItem = await apiUpdateClothing(API_URL, user.id, editingItem.id, payload);
+        const updatedItem = await apiUpdateClothing(API_URL, user._id, editingItem.id, payload);
         setClothingItems(prev => prev.map(item => item.id === editingItem.id ? { id: updatedItem._id || item.id, ...item, ...updatedItem } : item));
         Alert.alert('Success', 'Item updated successfully!');
       } else {
-        const newItem = await apiCreateClothing(API_URL, user.id, payload);
+        const newItem = await apiCreateClothing(API_URL, user._id, payload);
         setClothingItems(prev => [{ id: newItem._id, ...newItem }, ...prev]);
         Alert.alert('Success', 'Item added to your closet!');
       }
@@ -138,7 +138,7 @@ const ClosetScreen = ({ setActiveTab, user, API_URL }) => {
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: async () => {
           try {
-            await apiDeleteClothing(API_URL, user.id, itemId);
+            await apiDeleteClothing(API_URL, user._id, itemId);
             setClothingItems(prev => prev.filter(item => item.id !== itemId));
           } catch (error) {
             Alert.alert('Error', error.message);
@@ -153,7 +153,7 @@ const ClosetScreen = ({ setActiveTab, user, API_URL }) => {
       const target = clothingItems.find(item => item.id === itemId);
       if (!target) return;
       
-      const data = await apiToggleFavorite(API_URL, user.id, itemId, !target.favorite);
+      const data = await apiToggleFavorite(API_URL, user._id, itemId, !target.favorite);
       setClothingItems(prev => prev.map(item => item.id === itemId ? { ...item, favorite: data.favorite } : item));
     } catch (error) {
       Alert.alert('Error', error.message);
