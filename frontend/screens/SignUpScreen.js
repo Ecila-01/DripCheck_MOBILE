@@ -4,10 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../constants/colors';
 import styles from '../styles/SignUpScreenStyles';
-const API_URL =
-  Platform.OS === 'web'
-    ? 'http://localhost:3000'
-    : 'http://192.168.2.114:3000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const SignUpScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);

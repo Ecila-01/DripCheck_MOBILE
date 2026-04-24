@@ -30,7 +30,10 @@ const accountSchema = new mongoose.Schema(
       hours: { type: Number, default: 8 }, // Default to 8 AM
       minutes: { type: Number, default: 0 }
     },
-    hasSetPreferences: { type: Boolean, default: false }
+    hasSetPreferences: { type: Boolean, default: false },
+    // 💡 NEW FIELDS FOR OTP
+    resetOtp: { type: String, default: null },
+    resetOtpExpires: { type: Date, default: null },
   },
   { timestamps: true },
   

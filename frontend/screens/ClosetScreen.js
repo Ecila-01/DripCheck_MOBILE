@@ -6,7 +6,7 @@ import colors from '../constants/colors';
 import ClothingCard from '../components/ClothingCard';
 import ClothingFormModal from '../components/ClothingFormModal';
 import styles from '../styles/ClosetScreenStyles';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // Import our separated helpers!
 import { 
   categories, 
@@ -51,7 +51,22 @@ const ClosetScreen = ({ setActiveTab, user, API_URL }) => {
       if (showLoader) setLoadingItems(false);
     }
   };
+  // Function to persist data for Offline Mode
+  const saveToOfflineCache = async (items) => {
+    try {
+      await AsyncStorage.setItem('offline_closet', JSON.stringify(items));
+      console.log("📦 Closet cached for offline use.");
+    } catch (e) {
+      console.error("Failed to save offline cache", e);
+    }
+  };
 
+  // Trigger cache update whenever clothingItems changes
+  useEffect(() => {
+    if (clothingItems.length > 0) {
+      saveToOfflineCache(clothingItems);
+    }
+  }, [clothingItems]);
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchItems(false);

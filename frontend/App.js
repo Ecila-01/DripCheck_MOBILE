@@ -4,19 +4,52 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { Platform } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as Notifications from 'expo-notifications';
 // Importing all the structural screens
 import LandingScreen from './screens/LandingScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
 import DashboardScreen from './screens/DashboardScreen';
+import OfflineScreen from './screens/OfflineScreen';
+import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
+
+
+
 
 const Stack = createNativeStackNavigator();
+const usePermissionsWarmup = () => {
+  useEffect(() => {
+    (async () => {
+      if (Platform.OS === 'web') return;
+
+      // 1. Photo & Camera Permissions
+      const libraryStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const cameraStatus = await ImagePicker.requestCameraPermissionsAsync();
+
+      // 2. Notification Permissions (Crucial for Android 13+)
+      const notifStatus = await Notifications.requestPermissionsAsync();
+
+      // Debugging logs for your build process
+      console.log('Permissions Status:', {
+        gallery: libraryStatus.status,
+        camera: cameraStatus.status,
+        notifications: notifStatus.status
+      });
+
+      if (libraryStatus.status !== 'granted' || notifStatus.status !== 'granted') {
+        console.warn('Some permissions were not granted. App features may be limited.');
+      }
+    })();
+  }, []);
+};
+
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [isFirstLaunch, setIsFirstLaunch] = useState(null); // null means we are still checking
-
+  usePermissionsWarmup();
   useEffect(() => {
     // Check if the app has been launched before
     const checkFirstLaunch = async () => {
@@ -61,11 +94,13 @@ export default function App() {
           <Stack.Screen name="Login">
             {(props) => <LoginScreen {...props} setUser={setUser} />}
           </Stack.Screen>
-          
+          <Stack.Screen name="OfflineScreen">
+            {(props) => <OfflineScreen {...props} />}
+          </Stack.Screen>
           <Stack.Screen name="SignUp">
             {(props) => <SignUpScreen {...props} setUser={setUser} />}
           </Stack.Screen>
-
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
           <Stack.Screen name="Dashboard">
             {(props) => (
               <DashboardScreen 
@@ -79,7 +114,7 @@ export default function App() {
               />
             )}
           </Stack.Screen>
-
+            
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

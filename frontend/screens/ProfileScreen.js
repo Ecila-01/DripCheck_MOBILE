@@ -19,7 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import styles from '../styles/ProfileScreenStyles';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadImageToCloudinary } from '../utils/closetHelpers';
-
+import { Ionicons } from '@expo/vector-icons';
 // NEW IMPORTS FOR NOTIFICATIONS
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { scheduleDailyOutfitNotification } from '../utils/notificationHelper';
@@ -33,7 +33,8 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
   // Notification States
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [tempNotifTime, setTempNotifTime] = useState(new Date());
-  
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editForm, setEditForm] = useState({
     name: user?.name || '',
@@ -72,24 +73,29 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
   }, [user, API_URL]);
 
   const handlePickPhoto = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert('Permission Denied', 'Gallery access is needed to change your photo.');
-      return;
-    }
+  // This is the correct line!
+  const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  
+  if (status !== 'granted') {
+    Alert.alert(
+      'Permission Denied', 
+      'We need access to your gallery to update your profile picture. Please enable it in settings.'
+    );
+    return;
+  }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-    });
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images, // Explicitly set to Images
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.5,
+  });
 
-    if (!result.canceled) {
-      setLocalImage(result.assets[0].uri);
-      setEditModalVisible(true); 
-    }
-  };
+  if (!result.canceled) {
+    setLocalImage(result.assets[0].uri);
+    setEditModalVisible(true); 
+  }
+};
 
   const handleSaveAllDetails = async () => {
     if (!editForm.name.trim()) return Alert.alert('Error', 'Name cannot be empty');
@@ -224,7 +230,7 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
         </ScrollView>
       </SafeAreaView>
 
-      {/* UNIFIED EDIT MODAL */}
+      {  /* UNIFIED EDIT MODAL */}
       <Modal visible={editModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <ScrollView contentContainerStyle={{flexGrow: 1, justifyContent: 'center'}} showsVerticalScrollIndicator={false}>
@@ -258,7 +264,7 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
               <Text style={styles.label}>Daily Reminder</Text>
               <TouchableOpacity 
                 style={styles.input} 
-                onPress={() => setShowTimePicker(!showTimePicker)} // Toggles it open/closed
+                onPress={() => setShowTimePicker(!showTimePicker)} 
                 activeOpacity={0.7}
               >
                 <Text style={{ color: colors.textPrimary, paddingVertical: Platform.OS === 'ios' ? 4 : 0 }}>
@@ -273,8 +279,8 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
                     value={tempNotifTime}
                     mode="time"
                     display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    textColor="black" // Forces black text for iOS dark mode compatibility
-                    style={{ width: '100%', height: 200 }} // Explicit height is required for iOS
+                    textColor="black" 
+                    style={{ width: '100%', height: 200 }} 
                     onChange={(event, date) => {
                       if (Platform.OS === 'android') {
                         setShowTimePicker(false);
@@ -286,21 +292,47 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
               )}
 
               <Text style={styles.label}>New Password</Text>
-              <TextInput 
-                style={styles.input} 
-                secureTextEntry 
-                placeholder="Leave blank to keep current"
-                value={editForm.password}
-                onChangeText={(t) => setEditForm({...editForm, password: t})}
-              />
+              <View style={styles.passwordWrapper}>
+                <TextInput 
+                  style={styles.passwordInput} 
+                  secureTextEntry={!showNewPassword} 
+                  placeholder="Leave blank to keep current"
+                  value={editForm.password}
+                  onChangeText={(t) => setEditForm({...editForm, password: t})}
+                />
+                <TouchableOpacity 
+                  onPress={() => setShowNewPassword(!showNewPassword)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  style={styles.eyeButton}
+                >
+                  <Ionicons 
+                    name={showNewPassword ? 'eye-off-outline' : 'eye-outline'} 
+                    size={22} 
+                    color="#888" 
+                  />
+                </TouchableOpacity>
+              </View>
 
               <Text style={styles.label}>Confirm New Password</Text>
-              <TextInput 
-                style={styles.input} 
-                secureTextEntry 
-                value={editForm.confirmPassword}
-                onChangeText={(t) => setEditForm({...editForm, confirmPassword: t})}
-              />
+              <View style={styles.passwordWrapper}>
+                <TextInput 
+                  style={styles.passwordInput} 
+                  secureTextEntry={!showConfirmPassword} 
+                  value={editForm.confirmPassword}
+                  onChangeText={(t) => setEditForm({...editForm, confirmPassword: t})}
+                />
+                <TouchableOpacity 
+                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  style={styles.eyeButton}
+                >
+                  <Ionicons 
+                    name={showNewPassword ? 'eye-off-outline' : 'eye-outline'} 
+                    size={22} 
+                    color="#888" 
+                  />
+                </TouchableOpacity>
+              </View>
 
               <TouchableOpacity 
                 style={[styles.saveBtn, updating && { opacity: 0.7 }]} 
@@ -313,12 +345,13 @@ const ProfileScreen = ({ user, setUser, API_URL, onLogout }) => {
               <TouchableOpacity onPress={() => { 
                   setEditModalVisible(false); 
                   setLocalImage(null); 
-                  setShowTimePicker(false); // reset picker state
+                  setShowTimePicker(false); 
               }}>
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
+              
             </View>
-          </ScrollView>
+          </ScrollView> 
         </View>
       </Modal>
     </LinearGradient>

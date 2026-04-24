@@ -2,20 +2,6 @@
   "expo": {
     "name": "DripCheck",
     "slug": "dripcheck",
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.dripcheck.app",
-      "infoPlist": {
-        "UILaunchStoryboardName": "SplashScreen"
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./image_upload/DripCheckLogo.png",
-        "backgroundColor": "#FFFFFF"
-      },
-      "package": "com.dripcheck.app"
-    },
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./image_upload/DripCheckLogo.png",
@@ -25,11 +11,22 @@
       "resizeMode": "contain",
       "backgroundColor": "#FFFFFF"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "web": {
-      "favicon": "./image_upload/DripCheckLogo.png"
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dripcheck.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./image_upload/DripCheckLogo.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.dripcheck.app",
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES" 
+      ]
     },
     "plugins": [
       "@react-native-community/datetimepicker",
@@ -37,7 +34,17 @@
         "expo-notifications",
         {
           "icon": "./image_upload/DripCheckNotificationIcon.png",
-          "color": "#FFFFFF"
+          "color": "#FFFFFF",
+          "permissions": {
+            "notifications": true
+          }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share outfit ideas.",
+          "cameraPermission": "The app accesses your camera to let you take photos of your clothes."
         }
       ]
     ],

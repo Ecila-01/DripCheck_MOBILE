@@ -143,7 +143,27 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderColor: '#ddd', borderRadius: 10, padding: 12, marginBottom: 15, color: colors.textPrimary },
   saveBtn: { backgroundColor: colors.primaryBlue, padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 10 },
   saveBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  cancelText: { textAlign: 'center', marginTop: 20, color: 'red', fontWeight: '600' }
+  cancelText: { textAlign: 'center', marginTop: 20, color: 'red', fontWeight: '600' },
+  passwordWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5', // Match your usual input background
+    borderWidth: 1,
+    borderColor: '#E0E0E0',     // Match your usual input border
+    borderRadius: 8,            // Match your usual input radius
+    marginBottom: 15,
+  },
+  passwordInput: {
+    flex: 1,                    // Takes up all space leaving room for the icon
+    padding: 12,                // Match your styles.input padding
+    fontSize: 16,
+    color: '#333',
+  },
+  eyeButton: {
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default styles;

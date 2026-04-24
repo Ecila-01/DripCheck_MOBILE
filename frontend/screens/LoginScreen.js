@@ -6,13 +6,12 @@ import colors from '../constants/colors';
 import styles from '../styles/LoginScreenStyles';
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-
-
 const LoginScreen = ({ navigation, setUser }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const canGoBack = navigation.canGoBack();
+
   return (
     <LinearGradient
       colors={[colors.mainWhite, colors.offWhiteBackground]}
@@ -33,7 +32,6 @@ const LoginScreen = ({ navigation, setUser }) => {
               <Text style={styles.closeText}>✕</Text>
             </TouchableOpacity>
           ) : (
-            // Render an empty view or just null to keep layout spacing if needed
             <View style={styles.closeButton} /> 
           )}
         </View>
@@ -79,7 +77,7 @@ const LoginScreen = ({ navigation, setUser }) => {
 
             <TouchableOpacity
               style={styles.forgotPassword}
-              onPress={() => console.log('Forgot password pressed')}
+              onPress={() => navigation.navigate('ForgotPassword')} // ⬅️ UPDATED THIS LINE
               hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
             >
               <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
@@ -123,12 +121,28 @@ const LoginScreen = ({ navigation, setUser }) => {
                 <Text style={styles.loginLinkText}>Sign up</Text>
               </TouchableOpacity>
             </View>
+
+            {/* --- OFFLINE MODE BUTTON --- */}
+            <TouchableOpacity
+              style={{ marginTop: 40, alignItems: 'center' }}
+              onPress={() => navigation.navigate('OfflineScreen')}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={{ 
+                color: colors.primaryBlue, 
+                fontSize: 16, 
+                fontWeight: '600',
+                textDecorationLine: 'underline' 
+              }}>
+                ☁️ Use Offline Mode
+              </Text>
+            </TouchableOpacity>
+
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
   );
 };
-
 
 export default LoginScreen;

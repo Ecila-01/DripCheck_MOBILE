@@ -75,9 +75,12 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 // FIXED THE WARNING: Replaced shouldShowAlert with shouldShowBanner
+// UPDATED HANDLER: Fixed deprecation warnings
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowBanner: true, 
+    shouldShowAlert: true, // Keep for backward compatibility
+    shouldShowBanner: true, // ADDED for new Expo version
+    shouldShowList: true,   // ADDED for new Expo version
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -90,15 +93,19 @@ export const scheduleDailyOutfitNotification = async (hours, minutes) => {
     const { status } = await Notifications.requestPermissionsAsync();
     if (status !== 'granted') return;
 
-    // Force strict numbers
     const safeHours = Number(hours);
     const safeMinutes = Number(minutes);
 
-    if (isNaN(safeHours) || isNaN(safeMinutes)) {
-      console.error("❌ ABORTING: Invalid time passed:", hours, minutes);
-      return; 
+    const now = new Date();
+    const target = new Date();
+    target.setHours(safeHours, safeMinutes, 0, 0);
+
+    // If target is in the past or within 10 seconds, move to tomorrow
+    if (target.getTime() <= now.getTime() + 10000) {
+      target.setDate(target.getDate() + 1);
     }
 
+    // Android Channel Setup
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('daily-outfits', {
         name: 'Daily Outfit Reminders',
@@ -107,26 +114,24 @@ export const scheduleDailyOutfitNotification = async (hours, minutes) => {
       });
     }
 
-    // Flush old alarms
+    // Clear old ones
     await Notifications.cancelAllScheduledNotificationsAsync();
     await new Promise(resolve => setTimeout(resolve, 500)); 
-    await Notifications.dismissAllNotificationsAsync(); 
 
-    // THE TRUE FIX: Explicitly define 'type' to satisfy Expo, and keep iOS clean!
+    // THE FINAL FIX: Using explicit SchedulableTriggerInputTypes
     const triggerParams = Platform.OS === 'android'
       ? {
-          type: 'calendar',
+          // Change from DATE to DAILY to bypass strict Android 14/15/16 'Exact' blocks
+          type: Notifications.SchedulableTriggerInputTypes.DAILY, 
           hour: safeHours,
           minute: safeMinutes,
-          repeats: true,
-          channelId: 'daily-outfits', // Android needs this
+          channelId: 'daily-outfits',
         }
       : {
-          type: 'calendar',
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
           hour: safeHours,
           minute: safeMinutes,
           repeats: true,
-          // iOS gets a perfectly clean calendar object
         };
 
     await Notifications.scheduleNotificationAsync({
@@ -138,7 +143,7 @@ export const scheduleDailyOutfitNotification = async (hours, minutes) => {
       trigger: triggerParams,
     });
 
-    console.log(`✅ System Scheduled for exactly ${safeHours}:${safeMinutes < 10 ? '0'+safeMinutes : safeMinutes}`);
+    console.log(`✅ Targeted for: ${target.toLocaleTimeString()}`);
   } catch (error) {
     console.error("Scheduling Error:", error);
   }

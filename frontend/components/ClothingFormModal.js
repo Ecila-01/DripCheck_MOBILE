@@ -20,7 +20,7 @@ const ClothingFormModal = ({
   onClose,
   categories,
   getCategoryIcon,
-  isUploading
+  saving
 }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -40,15 +40,20 @@ const ClothingFormModal = ({
   };
 // Helper to handle the result from either picker
   const handlePickerResult = (result) => {
-    if (!result.canceled) {
+    console.log("Picker Result Received:", result.canceled ? "Canceled" : "Success");
+    
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const selectedUri = result.assets[0].uri;
+      console.log("New URI picked:", selectedUri);
+      
       setImageError(false);
-      setItemForm({
-        ...itemForm,
-        imageUri: result.assets[0].uri,
-      });
+      // We spread the form to ensure a new object reference is created
+      setItemForm(prev => ({
+        ...prev,
+        imageUri: selectedUri,
+      }));
     }
   };
-
   const pickImage = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
@@ -57,18 +62,19 @@ const ClothingFormModal = ({
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // Use the constant
+      mediaTypes: ['images'], // New Array Syntax
       quality: 0.7,
+      allowsEditing: true,    // 💡 Fixes many Android "Ghost URI" issues
+      aspect: [1, 1],
     });
     handlePickerResult(result);
   };
 
   const takePhoto = async () => {
-    // Camera is not supported in the web browser via this Expo API
     if (Platform.OS === 'web') {
-      alert('Camera is only supported on mobile devices. Use "Upload from Gallery".');
+      alert('Camera is only supported on mobile devices.');
       return;
-    }
+  }
 
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
@@ -77,10 +83,10 @@ const ClothingFormModal = ({
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'], // New Array Syntax
       quality: 0.7,
-      allowsEditing: true, // Optional: let user crop the photo
-      aspect: [1, 1],      // Forces a square photo
+      allowsEditing: true,    // Forces a clean temp file creation
+      aspect: [1, 1],
     });
     handlePickerResult(result);
   };
@@ -115,6 +121,7 @@ const ClothingFormModal = ({
                 {showImage ? (
                   <>
                     <Image
+                      key={itemForm.imageUri}
                       source={{ uri: itemForm.imageUri }}
                       style={localStyles.previewImage}
                       resizeMode="cover"
@@ -296,9 +303,9 @@ const ClothingFormModal = ({
             <TouchableOpacity
               style={styles.saveButton}
               onPress={onSave}
-              disabled={isUploading} // Prevent double-clicking
+              disabled={saving} // ⬅️ Use 'saving' here
             >
-              {isUploading ? (
+              {saving ? ( // ⬅️ Use 'saving' here
                 <ActivityIndicator color={colors.mainWhite} />
               ) : (
                 <Text style={styles.saveButtonText}>

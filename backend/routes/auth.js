@@ -103,5 +103,71 @@ router.put('/update/:id', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+// 🚀 1. REQUEST OTP ROUTE
+router.post('/forgot-password-otp', async (req, res) => {
+  try {
+    const { email } = req.body;
 
+    const user = await Account.findOne({ email });
+    if (!user) {
+      // Security best practice: Don't tell the user if the email exists or not
+      // Just pretend it worked so hackers can't "guess" registered emails.
+      return res.status(200).json({ message: 'If the email exists, an OTP was sent.' });
+    }
+
+    // Generate a 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Set expiration time (e.g., 15 minutes from now)
+    const otpExpires = Date.now() + 15 * 60 * 1000; 
+
+    // Save to database
+    user.resetOtp = otp;
+    user.resetOtpExpires = otpExpires;
+    await user.save();
+
+    // ⚠️ TODO: Actually send the email here using Nodemailer or SendGrid!
+    // For now, we will just log it to your server console so you can test it:
+    console.log(`\n📧 SIMULATED EMAIL TO ${email}: Your DripCheck OTP is ${otp}\n`);
+
+    res.status(200).json({ message: 'OTP generated successfully' });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// 🚀 2. VERIFY OTP & RESET PASSWORD ROUTE
+router.post('/reset-password-otp', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    // 1. Find the user with matching email, matching OTP, AND ensure it hasn't expired
+    const user = await Account.findOne({
+      email: email,
+      resetOtp: otp,
+      resetOtpExpires: { $gt: Date.now() } // $gt means "Greater Than" right now
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired verification code.' });
+    }
+
+    // 2. Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // 3. Update the user: Set new password and CLEAR the OTP fields so it can't be reused
+    user.password = hashedPassword;
+    user.resetOtp = null;
+    user.resetOtpExpires = null;
+
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successfully' });
+  } catch (error) {
+    console.error("Reset Password Error:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 module.exports = router;
