@@ -14,29 +14,78 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// 🚀 1. REGISTRATION - SEND OTP
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Name, email, and password are required' });
-    }
+    // Generic response for privacy
+    const successMsg = { message: 'If the email is valid, a verification code has been sent.' };
 
     const existingUser = await Account.findOne({ email });
+    
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = Date.now() + 15 * 60 * 1000;
+
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
+      // EMAIL PRIVACY: Send "Already Registered" email instead of an error to the app
+      const mailOptions = {
+        from: `"DripCheck App" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'DripCheck - Account Already Exists',
+        html: `<p>Hello ${name}, you already have an account! Please log in instead.</p>`
+      };
+      await transporter.sendMail(mailOptions);
+      return res.status(200).json(successMsg);
     }
 
+    // Since we don't want to create the user yet, we temporarily store 
+    // the hashed password and OTP on a "Pending" basis.
+    // FOR THE DEMO: You can reuse your Account model by adding 'isVerified: false'
+    // OR just use a temporary 'resetOtp' style field for registration.
+    
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // We update/upsert a user that is NOT YET verified
+    await Account.findOneAndUpdate(
+      { email },
+      { name, password: hashedPassword, resetOtp: otp, resetOtpExpires: otpExpires },
+      { upsert: true, new: true }
+    );
 
-    const user = new Account({
-      name,
+    const mailOptions = {
+      from: `"DripCheck App" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'DripCheck - Verify your Account',
+      html: `<h2>Welcome to DripCheck!</h2><p>Your code is: <strong>${otp}</strong></p>`
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json(successMsg);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 🚀 2. VERIFY REGISTRATION (Finalizes account)
+router.post('/verify-registration', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const user = await Account.findOne({
       email,
-      password: hashedPassword,
+      resetOtp: otp,
+      resetOtpExpires: { $gt: Date.now() }
     });
 
+    if (!user) return res.status(400).json({ message: 'Invalid or expired code.' });
+
+    user.resetOtp = null;
+    user.resetOtpExpires = null;
+    // user.isVerified = true; (Optional: add this field to your model)
     await user.save();
-    res.status(201).json({ message: 'User registered successfully' });
+
+    res.status(201).json({ message: 'Account verified and created!' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

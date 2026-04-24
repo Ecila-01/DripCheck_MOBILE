@@ -5,13 +5,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import colors from '../constants/colors';
 import styles from '../styles/LoginScreenStyles';
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const LoginScreen = ({ navigation, setUser }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const canGoBack = navigation.canGoBack();
-
+  const [loading, setLoading] = useState(false);
   return (
     <LinearGradient
       colors={[colors.mainWhite, colors.offWhiteBackground]}
@@ -90,21 +92,42 @@ const LoginScreen = ({ navigation, setUser }) => {
                   alert('Please enter email and password');
                   return;
                 }
+
+                setLoading(true); // Always good to show a spinner!
+
                 try {
                   const res = await fetch(`${API_URL}/api/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password }),
                   });
+
                   const data = await res.json();
+
                   if (!res.ok) {
                     alert(data.message || 'Login failed');
                     return;
                   }
-                  setUser(data.user);
+
+                  // ✅ 1. Define the session data first!
+                  const sessionData = {
+                    user: data.user,
+                    loginTime: Date.now(),
+                    expiresAt: Date.now() + (6 * 60 * 60 * 1000), // 6 hours from now
+                  };
+
+                  // ✅ 2. Save it to AsyncStorage
+                  await AsyncStorage.setItem('user_session', JSON.stringify(sessionData));
+
+                  // ✅ 3. Update global state and navigate
+                  // Note: If you use a 'setUser' function from Context, call it here
+                  if (setUser) setUser(data.user); 
+                  
                   navigation.replace('Dashboard');
                 } catch (err) {
                   alert('Network error: ' + err.message);
+                } finally {
+                  setLoading(false);
                 }
               }}
               activeOpacity={0.8}
