@@ -5,7 +5,8 @@
     "dotenv": "^17.2.4",
     "express": "^5.2.1",
     "mongoose": "^9.1.6",
-    "nodemailer": "^8.0.5"
+    "nodemailer": "^8.0.5",
+    "resend": "^6.12.2"
   },
   "name": "backend",
   "version": "1.0.0",

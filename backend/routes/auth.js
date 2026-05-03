@@ -1,24 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer'); // 💡 1. IMPORT NODEMAILER
+const { Resend } = require('resend'); // 💡 1. IMPORT RESEND
 const Account = require('../models/Account');
 
 const router = express.Router();
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com', // Force the host instead of using service: 'gmail'
-  port: 465,
-  secure: true, 
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    // This helps bypass some strict server-to-server TLS routing issues
-    rejectUnauthorized: false 
-  }
-});
-
+// 💡 2. CONFIGURE RESEND API
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // 🚀 1. REGISTER (Initial Step)
 router.post('/register', async (req, res) => {
@@ -28,16 +16,15 @@ router.post('/register', async (req, res) => {
 
     const existingUser = await Account.findOne({ email });
     
-    // Privacy Logic: If they already exist and ARE verified, don't tell the app.
-    // Send them an email instead.
+    // Privacy Logic: If they already exist and ARE verified
     if (existingUser && existingUser.verified) {
-      const mailOptions = {
-        from: `"DripCheck App" <${process.env.EMAIL_USER}>`,
+      await resend.emails.send({
+        from: 'DripCheck App <onboarding@resend.dev>',
         to: email,
         subject: 'DripCheck - Account Already Exists',
         html: `<p>Hello ${name}, you already have a verified account! Please login or reset your password.</p>`
-      };
-      await transporter.sendMail(mailOptions).catch(err => console.log("Mail error:", err));
+      }).catch(err => console.log("Mail error:", err));
+      
       return res.status(200).json(successMsg);
     }
 
@@ -45,8 +32,7 @@ router.post('/register', async (req, res) => {
     const otpExpires = Date.now() + 15 * 60 * 1000;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Upsert the data. If an unverified user exists, it updates their OTP/Password.
-    // If no user exists, it creates a new one with verified: false.
+    // Upsert the data
     await Account.findOneAndUpdate(
       { email },
       { 
@@ -59,16 +45,17 @@ router.post('/register', async (req, res) => {
       { upsert: true, new: true }
     );
 
-    const mailOptions = {
-      from: `"DripCheck App" <${process.env.EMAIL_USER}>`,
+    // 💡 3. SEND REGISTRATION EMAIL VIA RESEND
+    await resend.emails.send({
+      from: 'DripCheck App <onboarding@resend.dev>',
       to: email,
       subject: 'DripCheck - Verify your Account',
       html: `<h2>Welcome to DripCheck!</h2><p>Your verification code is: <strong>${otp}</strong></p>`
-    };
+    });
 
-    await transporter.sendMail(mailOptions);
     res.status(200).json(successMsg);
   } catch (error) {
+    console.error("Register Error:", error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -99,7 +86,7 @@ router.post('/verify-registration', async (req, res) => {
   }
 });
 
-// 🚀 3. LOGIN (Updated with Verification Check)
+// 🚀 3. LOGIN
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -163,18 +150,16 @@ router.post('/forgot-password-otp', async (req, res) => {
       return res.status(200).json({ message: 'If the email exists, an OTP was sent.' });
     }
 
-    // Generate a 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = Date.now() + 15 * 60 * 1000; 
 
-    // Save to database
     user.resetOtp = otp;
     user.resetOtpExpires = otpExpires;
     await user.save();
 
-    // 💡 3. SEND THE ACTUAL EMAIL
-    const mailOptions = {
-      from: `"DripCheck App" <${process.env.EMAIL_USER}>`,
+    // 💡 4. SEND PASSWORD RESET EMAIL VIA RESEND
+    await resend.emails.send({
+      from: 'DripCheck App <onboarding@resend.dev>',
       to: email,
       subject: 'DripCheck - Password Reset Verification Code',
       html: `
@@ -191,11 +176,9 @@ router.post('/forgot-password-otp', async (req, res) => {
           <p>Stay fresh,<br><strong>The DripCheck Team</strong></p>
         </div>
       `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
+    
     console.log(`Email successfully sent to ${email}`);
-
     res.status(200).json({ message: 'OTP generated successfully' });
   } catch (error) {
     console.error("Forgot Password Error:", error);
@@ -234,29 +217,26 @@ router.post('/reset-password-otp', async (req, res) => {
   }
 });
 
+// 🚀 REQUEST DELETE OTP
 router.post('/request-delete-otp', async (req, res) => {
   try {
     const { email, userId } = req.body;
 
-    // Verify the user exists using the provided ID
     const user = await Account.findById(userId);
     if (!user || user.email !== email) {
-      // Don't leak whether the account exists or not for security
       return res.status(200).json({ message: 'If the account exists, an OTP was sent.' });
     }
 
-    // Generate a 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+    const otpExpires = Date.now() + 15 * 60 * 1000; 
 
-    // Save the OTP to the user document
     user.resetOtp = otp;
     user.resetOtpExpires = otpExpires;
     await user.save();
 
-    // 💡 SEND THE ACTUAL EMAIL VIA NODEMAILER
-    const mailOptions = {
-      from: `"DripCheck App" <${process.env.EMAIL_USER}>`,
+    // 💡 5. SEND DELETION EMAIL VIA RESEND
+    await resend.emails.send({
+      from: 'DripCheck App <onboarding@resend.dev>',
       to: email,
       subject: 'DripCheck - Account Deletion Verification Code',
       html: `
@@ -274,17 +254,16 @@ router.post('/request-delete-otp', async (req, res) => {
           <p>The DripCheck Team</p>
         </div>
       `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    });
+    
     console.log(`Deletion OTP sent to ${email}`);
-
     res.status(200).json({ message: 'OTP generated successfully' });
   } catch (error) {
     console.error("Request Delete OTP Error:", error);
     res.status(500).json({ message: 'Server error while generating OTP' });
   }
 });
+
 // DELETE: api/auth/delete-account/:id
 router.delete('/delete-account/:id', async (req, res) => {
   try {
@@ -296,22 +275,15 @@ router.delete('/delete-account/:id', async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Verify OTP
     if (!user.resetOtp || user.resetOtp !== otp) {
         return res.status(400).json({ message: "Invalid or expired OTP" });
     }
     
-    // Check expiration
     if (user.resetOtpExpires && Date.now() > user.resetOtpExpires) {
          return res.status(400).json({ message: "OTP has expired" });
     }
 
-    // (Optional) Delete associated data here if you have other collections
-    // e.g., await Clothing.deleteMany({ userId: userId });
-
-    // Perform deletion
     await Account.findByIdAndDelete(userId);
-
     res.status(200).json({ message: "Account successfully deleted" });
 
   } catch (error) {
@@ -319,4 +291,5 @@ router.delete('/delete-account/:id', async (req, res) => {
     res.status(500).json({ message: "Server error during account deletion" });
   }
 });
+
 module.exports = router;
