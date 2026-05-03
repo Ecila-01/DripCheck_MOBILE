@@ -7,7 +7,7 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat&logo=mongodb&logoColor=white)]()
 
 > **Elevate your daily fit.** <br>
-> A full-stack mobile solution to manage your digital closet, plan outfits, and keep your style fresh every single day. Originally developed as a comprehensive thesis project.
+> A full-stack mobile solution to manage your digital closet, plan outfits, and keep your style fresh every single day. Originally developed as a comprehensive university mobile app project.
 
 ---
 
