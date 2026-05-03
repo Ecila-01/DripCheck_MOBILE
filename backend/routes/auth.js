@@ -5,13 +5,18 @@ const Account = require('../models/Account');
 
 const router = express.Router();
 
-// 💡 2. CONFIGURE THE EMAIL TRANSPORTER
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com', // Force the host instead of using service: 'gmail'
+  port: 465,
+  secure: true, 
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // This must be an App Password, not your normal password!
+    pass: process.env.EMAIL_PASS,
   },
+  tls: {
+    // This helps bypass some strict server-to-server TLS routing issues
+    rejectUnauthorized: false 
+  }
 });
 
 
