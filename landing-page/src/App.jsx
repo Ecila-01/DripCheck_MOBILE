@@ -4,7 +4,7 @@ function App() {
   const [slide, setSlide] = useState(1);
   const totalSlides = 9;
 
-  // Dynamic URL logic for Cloudinary.
+  // Dynamic URL logic for Cloudinary
   const currentUrl = slide <= totalSlides 
     ? `https://res.cloudinary.com/dmwhbhssm/image/upload/f_auto,q_auto,pg_${slide}/dripcheck_cxycop.jpg`
     : "https://res.cloudinary.com/dmwhbhssm/video/upload/v1777810715/video_20260503_171552_edit_wwbq7o.mp4";
@@ -53,15 +53,15 @@ function App() {
           </a>
         </div>
 
-        {/* Integrated Presentation & Video Slider - Made Bigger */}
+        {/* Integrated Presentation & Video Slider - Consumes 80% of screen width */}
         <div className="w-full flex flex-col items-center gap-6">
           <div className="relative group" style={{ 
-            width: '100%', 
-            maxWidth: '520px',  // Increased from 320px to 520px
-            borderRadius: '32px',  // Larger border radius
-            border: '10px solid #1a1a1a',  // Thicker border
+            width: '80vw',  // Consumes 80% of viewport width
+            maxWidth: '1200px',  // Optional: prevents it from becoming too wide on huge screens
+            borderRadius: '32px',
+            border: '10px solid #1a1a1a',
             overflow: 'hidden', 
-            boxShadow: '0 25px 40px rgba(0,0,0,0.6)',  // Deeper shadow
+            boxShadow: '0 25px 40px rgba(0,0,0,0.6)',
             backgroundColor: '#000'
           }}>
             {slide <= totalSlides ? (
@@ -88,14 +88,14 @@ function App() {
             {/* Navigation Overlays */}
             <button 
               onClick={() => setSlide(s => Math.max(1, s - 1))}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-dripBlue p-2 rounded-full text-white transition-colors"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-dripBlue p-3 rounded-full text-white transition-colors text-2xl"
               aria-label="Previous Slide"
             >
               ←
             </button>
             <button 
               onClick={() => setSlide(s => Math.min(totalSlides + 1, s + 1))}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-dripBlue p-2 rounded-full text-white transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-dripBlue p-3 rounded-full text-white transition-colors text-2xl"
               aria-label="Next Slide"
             >
               →
