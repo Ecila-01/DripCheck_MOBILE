@@ -4,7 +4,7 @@ function App() {
   const [slide, setSlide] = useState(1);
   const totalSlides = 9;
 
-  // Dynamic URL logic for Cloudinary
+  // Dynamic URL logic for Cloudinary.
   const currentUrl = slide <= totalSlides 
     ? `https://res.cloudinary.com/dmwhbhssm/image/upload/f_auto,q_auto,pg_${slide}/dripcheck_cxycop.jpg`
     : "https://res.cloudinary.com/dmwhbhssm/video/upload/v1777810715/video_20260503_171552_edit_wwbq7o.mp4";
