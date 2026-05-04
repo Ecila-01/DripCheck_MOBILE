@@ -2,12 +2,24 @@ import React, { useState } from 'react';
 
 function App() {
   const [slide, setSlide] = useState(1);
-  const totalSlides = 9;
+  const totalSlides = 11; // 9 image slides + 2 video slides
 
   // Dynamic URL logic for Cloudinary
-  const currentUrl = slide <= totalSlides 
-    ? `https://res.cloudinary.com/dmwhbhssm/image/upload/f_auto,q_auto,pg_${slide}/dripcheck_cxycop.jpg`
-    : "https://res.cloudinary.com/dmwhbhssm/video/upload/v1777810715/video_20260503_171552_edit_wwbq7o.mp4";
+  const getCurrentUrl = () => {
+    if (slide <= 9) {
+      // Image slides 1-9
+      return `https://res.cloudinary.com/dmwhbhssm/image/upload/f_auto,q_auto,pg_${slide}/dripcheck_cxycop.jpg`;
+    } else if (slide === 10) {
+      // First video (new recording)
+      return "https://res.cloudinary.com/dmwhbhssm/video/upload/v1746375389/Recording_2026-05-04_081628_vwqr3r.mp4";
+    } else {
+      // Second video (original)
+      return "https://res.cloudinary.com/dmwhbhssm/video/upload/v1777810715/video_20260503_171552_edit_wwbq7o.mp4";
+    }
+  };
+
+  const currentUrl = getCurrentUrl();
+  const isVideo = slide > 9;
 
   return (
     <div className="min-h-screen text-white font-sans selection:bg-dripBlue bg-[radial-gradient(circle_at_50%_50%,_#1a1a2e_0%,_#0f0f12_100%)] overflow-x-hidden">
@@ -56,15 +68,15 @@ function App() {
         {/* Integrated Presentation & Video Slider - Consumes 80% of screen width */}
         <div className="w-full flex flex-col items-center gap-6">
           <div className="relative group" style={{ 
-            width: '80vw',  // Consumes 80% of viewport width
-            maxWidth: '1200px',  // Optional: prevents it from becoming too wide on huge screens
+            width: '80vw',
+            maxWidth: '1200px',
             borderRadius: '32px',
             border: '10px solid #1a1a1a',
             overflow: 'hidden', 
             boxShadow: '0 25px 40px rgba(0,0,0,0.6)',
             backgroundColor: '#000'
           }}>
-            {slide <= totalSlides ? (
+            {!isVideo ? (
               <img 
                 src={currentUrl} 
                 alt={`Presentation Slide ${slide}`}
@@ -72,6 +84,7 @@ function App() {
               />
             ) : (
               <video 
+                key={currentUrl}
                 width="100%" 
                 height="auto" 
                 controls 
@@ -94,7 +107,7 @@ function App() {
               ←
             </button>
             <button 
-              onClick={() => setSlide(s => Math.min(totalSlides + 1, s + 1))}
+              onClick={() => setSlide(s => Math.min(totalSlides, s + 1))}
               className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-dripBlue p-3 rounded-full text-white transition-colors text-2xl"
               aria-label="Next Slide"
             >
@@ -104,10 +117,12 @@ function App() {
 
           {/* Indicator Label */}
           <div className="text-gray-400 font-medium">
-            {slide <= totalSlides ? (
+            {slide <= 9 ? (
               <span className="flex items-center gap-2">
-                <span className="text-dripBlue">Slide</span> {slide} / {totalSlides}
+                <span className="text-dripBlue">Slide</span> {slide} / 9
               </span>
+            ) : slide === 10 ? (
+              <span className="text-dripBlue font-bold tracking-widest animate-pulse">DEMO REEL 1</span>
             ) : (
               <span className="text-dripBlue font-bold tracking-widest animate-pulse">LIVE DEMO</span>
             )}
