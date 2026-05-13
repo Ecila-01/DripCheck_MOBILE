@@ -1,26 +1,11 @@
 import React, { useState } from 'react';
 
 function App() {
-  const [slide, setSlide] = useState(1);
-  const totalSlides = 11; // 9 image slides + 2 video slides
+  // Start on page 2, total slides reduced to 9 (videos removed)
+  const [slide, setSlide] = useState(2);
+  const totalSlides = 9; 
 
-  // Dynamic URL logic for Cloudinary
-  const getCurrentUrl = () => {
-    if (slide <= 9) {
-      // Image slides 1-9
-      return `https://res.cloudinary.com/dmwhbhssm/image/upload/f_auto,q_auto,pg_${slide}/dripcheck_cxycop.jpg`;
-    } else if (slide === 10) {
-      // First video (new recording)
-      return "https://res.cloudinary.com/dmwhbhssm/video/upload/v1746375389/Recording_2026-05-04_081628_vwqr3r.mp4";
-    } else {
-      // Second video (original)
-      return "https://res.cloudinary.com/dmwhbhssm/video/upload/v1777810715/video_20260503_171552_edit_wwbq7o.mp4";
-    }
-  };
-
-  const currentUrl = getCurrentUrl();
-  const isVideo = slide > 9;
-  const isPortraitVideo = slide === 11; // The second video is portrait
+  const currentUrl = `https://res.cloudinary.com/dmwhbhssm/image/upload/f_auto,q_auto,pg_${slide}/dripcheck_cxycop.jpg`;
 
   return (
     <div className="min-h-screen text-white font-sans selection:bg-dripBlue bg-[radial-gradient(circle_at_50%_50%,_#1a1a2e_0%,_#0f0f12_100%)] overflow-x-hidden">
@@ -66,7 +51,7 @@ function App() {
           </a>
         </div>
 
-        {/* Integrated Presentation & Video Slider - Consumes 80% of screen width */}
+        {/* Integrated Presentation Slider */}
         <div className="w-full flex flex-col items-center gap-6">
           <div className="relative group flex justify-center" style={{ 
             width: '80vw',
@@ -77,33 +62,11 @@ function App() {
             boxShadow: '0 25px 40px rgba(0,0,0,0.6)',
             backgroundColor: '#000'
           }}>
-            {!isVideo ? (
-              <img 
-                src={currentUrl} 
-                alt={`Presentation Slide ${slide}`}
-                className="w-full h-auto block animate-in fade-in duration-500"
-              />
-            ) : (
-              <div className="w-full flex justify-center bg-black">
-                <video 
-                  key={currentUrl}
-                  controls 
-                  muted 
-                  playsInline
-                  autoPlay
-                  className="block animate-in fade-in duration-500"
-                  style={{
-                    width: isPortraitVideo ? 'auto' : '100%',
-                    height: isPortraitVideo ? '70vh' : 'auto',
-                    maxHeight: '80vh',
-                    objectFit: 'contain'
-                  }}
-                >
-                  <source src={currentUrl} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            )}
+            <img 
+              src={currentUrl} 
+              alt={`Presentation Slide ${slide}`}
+              className="w-full h-auto block animate-in fade-in duration-500"
+            />
 
             {/* Navigation Overlays */}
             <button 
@@ -124,15 +87,9 @@ function App() {
 
           {/* Indicator Label */}
           <div className="text-gray-400 font-medium">
-            {slide <= 9 ? (
-              <span className="flex items-center gap-2">
-                <span className="text-dripBlue">Slide</span> {slide} / 9
-              </span>
-            ) : slide === 10 ? (
-              <span className="text-dripBlue font-bold tracking-widest animate-pulse">DEMO REEL 1</span>
-            ) : (
-              <span className="text-dripBlue font-bold tracking-widest animate-pulse">LIVE DEMO</span>
-            )}
+            <span className="flex items-center gap-2">
+              <span className="text-dripBlue">Slide</span> {slide} / {totalSlides}
+            </span>
           </div>
         </div>
 
