@@ -1,122 +1,184 @@
 import React, { useState } from 'react';
 
+const REPO_URL = 'https://github.com/Ecila-01/DripCheck_MOBILE';
+const APK_URL =
+  'https://github.com/Ecila-01/DripCheck_MOBILE/releases/download/v1.0.0/Dripcheck.v1.0.0.apk';
+
 function App() {
   const [slide, setSlide] = useState(1);
-  const totalSlides = 8; 
+  const totalSlides = 8;
   const currentUrl = `https://res.cloudinary.com/dmwhbhssm/image/upload/f_auto,q_auto,pg_${slide + 1}/dripcheck_cxycop.jpg`;
 
+  const proof = [
+    {
+      claim: 'You can install it today',
+      detail:
+        'Grab the v1.0.0 APK, sideload it on any Android phone, and it runs.',
+      link: { label: 'Download the APK', href: APK_URL },
+    },
+    {
+      claim: 'The code is all public',
+      detail:
+        'The full React Native and Node source sits on GitHub. Clone it and build it yourself.',
+      link: { label: 'Open the repo', href: REPO_URL },
+    },
+    {
+      claim: 'Those screenshots are the actual app',
+      detail:
+        'The slides up top are real screens straight from the build, not mockups dropped into a phone frame.',
+      link: null,
+    },
+    {
+      claim: 'It runs on real services',
+      detail:
+        'Photos upload to Cloudinary, and signing in sends a one time code to your email. None of it is faked.',
+      link: null,
+    },
+  ];
+
   return (
-    <div className="min-h-screen text-white font-sans selection:bg-dripBlue bg-[radial-gradient(circle_at_50%_50%,_#1a1a2e_0%,_#0f0f12_100%)] overflow-x-hidden">
-      
+    <div className="min-h-screen bg-[#0f1115] text-[#f2f3f5] selection:bg-[var(--accent)] selection:text-white overflow-x-hidden">
+
       {/* Navigation */}
-      <nav className="p-6 md:p-8 flex justify-between items-center max-w-6xl mx-auto w-full">
+      <nav className="max-w-6xl mx-auto w-full px-6 py-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img 
-            src="/logo.png" 
-            alt="DripCheck Logo" 
-            className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+          <img
+            src="/logo.png"
+            alt="DripCheck logo"
+            className="w-9 h-9 object-contain"
           />
-          <h1 className="text-xl sm:text-2xl font-black tracking-tighter text-dripBlue">
-            DRIPCHECK
-          </h1>
+          <span className="text-xl font-bold tracking-tight">DripCheck</span>
         </div>
+        <a
+          href={REPO_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="text-sm text-[#99a1ad] hover:text-[#f2f3f5] transition-colors"
+        >
+          GitHub
+        </a>
       </nav>
 
-      {/* Hero Section */}
-      <header className="flex flex-col items-center text-center pt-10 sm:pt-16 px-6 max-w-6xl mx-auto w-full">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-4 sm:mb-6 tracking-tight bg-gradient-to-br from-white to-[#888] bg-clip-text text-transparent">
-          Elevate your daily fit.
-        </h1>
-        <p className="max-w-2xl text-gray-400 text-base sm:text-lg md:text-xl mb-10 sm:mb-12 leading-relaxed px-2">
-          A full-stack mobile solution to manage your digital closet, plan outfits, and keep your style fresh every single day.
-        </p>
-        
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-16 w-full sm:w-auto">
-          <a 
-            href="https://github.com/Ecila-01/DripCheck_MOBILE/releases/download/v1.0.0/Dripcheck.v1.0.0.apk" 
-            className="bg-dripBlue px-8 py-4 rounded-xl font-bold text-white hover:-translate-y-1 transition-transform duration-200 shadow-[0_4px_14px_rgba(74,144,226,0.39)] text-center w-full sm:w-auto"
-          >
-            Download APK
-          </a>
-          <a 
-            href="https://github.com/Ecila-01/DripCheck_MOBILE" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="bg-white/5 border border-white/10 px-8 py-4 rounded-xl font-bold text-white hover:bg-white/10 hover:-translate-y-1 transition-all duration-200 text-center w-full sm:w-auto"
-          >
-            View Source Code
-          </a>
-        </div>
+      <main>
+        {/* Hero */}
+        <section className="max-w-6xl mx-auto w-full px-6 pt-20 pb-24 flex flex-col items-center text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--accent)] mb-5">
+            Android wardrobe app
+          </p>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight leading-[1.08] max-w-3xl mb-6">
+            Your whole closet, on your phone.
+          </h1>
+          <p className="text-lg text-[#99a1ad] max-w-2xl leading-[1.6] mb-10">
+            Take a photo of everything you own and DripCheck keeps it organized
+            in one place. Picking an outfit becomes a few taps instead of ten
+            minutes of digging through the wardrobe.
+          </p>
 
-        {/* Integrated Presentation Slider */}
-        <div className="w-full flex flex-col items-center gap-6">
-          <div className="relative group flex justify-center" style={{ 
-            width: '80vw',
-            maxWidth: '1200px',
-            borderRadius: '32px',
-            border: '10px solid #1a1a1a',
-            overflow: 'hidden', 
-            boxShadow: '0 25px 40px rgba(0,0,0,0.6)',
-            backgroundColor: '#000'
-          }}>
-            <img 
-              src={currentUrl} 
-              alt={`Presentation Slide ${slide}`}
-              className="w-full h-auto block animate-in fade-in duration-500"
-            />
-
-            {/* Navigation Overlays */}
-            <button 
-              onClick={() => setSlide(s => Math.max(1, s - 1))}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-dripBlue p-3 rounded-full text-white transition-colors text-2xl z-10"
-              aria-label="Previous Slide"
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-20">
+            <a
+              href={APK_URL}
+              className="bg-[var(--accent)] text-white px-7 py-3.5 rounded-lg font-semibold text-center hover:opacity-90 transition-opacity"
             >
-              ←
-            </button>
-            <button 
-              onClick={() => setSlide(s => Math.min(totalSlides, s + 1))}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-dripBlue p-3 rounded-full text-white transition-colors text-2xl z-10"
-              aria-label="Next Slide"
+              Download the APK
+            </a>
+            <a
+              href={REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="border border-[#2a2f37] text-[#f2f3f5] px-7 py-3.5 rounded-lg font-semibold text-center hover:border-[#3a414b] hover:bg-[#171a20] transition-colors"
             >
-              →
-            </button>
+              View the source
+            </a>
           </div>
 
-          {/* Indicator Label */}
-          <div className="text-gray-400 font-medium">
-            <span className="flex items-center gap-2">
-              <span className="text-dripBlue">Slide</span> {slide} / {totalSlides}
-            </span>
+          {/* Slider */}
+          <div className="w-full flex flex-col items-center gap-5">
+            <div className="relative w-full max-w-[1000px] rounded-2xl border border-[#23272f] overflow-hidden bg-black">
+              <img
+                src={currentUrl}
+                alt={`App screen ${slide}`}
+                className="w-full h-auto block"
+              />
+              <button
+                onClick={() => setSlide((s) => Math.max(1, s - 1))}
+                disabled={slide === 1}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-[var(--accent)] disabled:opacity-30 disabled:hover:bg-black/60 w-11 h-11 rounded-full text-white text-xl transition-colors"
+                aria-label="Previous screen"
+              >
+                ←
+              </button>
+              <button
+                onClick={() => setSlide((s) => Math.min(totalSlides, s + 1))}
+                disabled={slide === totalSlides}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-[var(--accent)] disabled:opacity-30 disabled:hover:bg-black/60 w-11 h-11 rounded-full text-white text-xl transition-colors"
+                aria-label="Next screen"
+              >
+                →
+              </button>
+            </div>
+            <p className="text-sm text-[#99a1ad]">
+              Real screens from the app. Use the arrows to look through them.
+              <span className="text-[var(--accent)] ml-2">
+                {slide} / {totalSlides}
+              </span>
+            </p>
+          </div>
+        </section>
+
+        {/* Proof */}
+        <section className="border-t border-[#1f232b]">
+          <div className="max-w-6xl mx-auto w-full px-6 py-24 grid md:grid-cols-[0.85fr_1.15fr] gap-12 md:gap-16">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--accent)] mb-5">
+                Proof
+              </p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-[1.15] mb-4">
+                It's a real app, not a concept.
+              </h2>
+              <p className="text-[#99a1ad] leading-[1.6]">
+                Everything here you can go and check for yourself.
+              </p>
+            </div>
+
+            <div className="divide-y divide-[#1f232b]">
+              {proof.map((item) => (
+                <div key={item.claim} className="py-6 first:pt-0 last:pb-0">
+                  <h3 className="text-lg font-semibold mb-1.5">{item.claim}</h3>
+                  <p className="text-[#99a1ad] leading-[1.6]">{item.detail}</p>
+                  {item.link && (
+                    <a
+                      href={item.link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-block mt-2 text-[var(--accent)] font-medium hover:underline"
+                    >
+                      {item.link.label}
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-[#1f232b]">
+        <div className="max-w-6xl mx-auto w-full px-6 py-8 flex flex-col sm:flex-row gap-4 justify-between items-center text-sm text-[#99a1ad]">
+          <span>DripCheck. Built by Wifraim.</span>
+          <div className="flex gap-6">
+            <a href={REPO_URL} target="_blank" rel="noreferrer" className="hover:text-[#f2f3f5] transition-colors">
+              Source
+            </a>
+            <a href={APK_URL} className="hover:text-[#f2f3f5] transition-colors">
+              Download
+            </a>
+            <a href="https://wifraim.dev" target="_blank" rel="noreferrer" className="hover:text-[#f2f3f5] transition-colors">
+              wifraim.dev
+            </a>
           </div>
         </div>
-
-      </header>
-
-      {/* Feature Grid */}
-      <section className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-6 py-16 sm:py-24 pb-24 sm:pb-32 w-full">
-        <div className="p-6 sm:p-8 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors duration-300">
-          <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-dripBlue">👕 Smart Closet</h3>
-          <p className="text-gray-400 leading-relaxed text-sm">
-            Organize your clothes with Cloudinary-powered uploads and categorized storage for easy access.
-          </p>
-        </div>
-
-        <div className="p-6 sm:p-8 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors duration-300">
-          <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-dripBlue">🚀 MERN Stack Power</h3>
-          <p className="text-gray-400 leading-relaxed text-sm">
-            Built with React Native, Node.js, Express, and MongoDB for a seamless, high-performance experience.
-          </p>
-        </div>
-
-        <div className="p-6 sm:p-8 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 transition-colors duration-300 sm:col-span-2 lg:col-span-1">
-          <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-dripBlue">🔒 Secure Auth</h3>
-          <p className="text-gray-400 leading-relaxed text-sm">
-            Industry-standard OTP verification via Resend ensuring your closet data stays private and protected.
-          </p>
-        </div>
-      </section>
-
+      </footer>
     </div>
   );
 }
