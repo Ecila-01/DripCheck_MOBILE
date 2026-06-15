@@ -11,27 +11,27 @@ function App() {
 
   const proof = [
     {
-      claim: 'You can install it today',
+      claim: 'Install it on Android',
       detail:
-        'Grab the v1.0.0 APK, sideload it on any Android phone, and it runs.',
+        'Grab the v1.0.0 APK and sideload it. Works on any Android phone.',
       link: { label: 'Download the APK', href: APK_URL },
     },
     {
-      claim: 'The code is all public',
+      claim: 'The source is on GitHub',
       detail:
-        'The full React Native and Node source sits on GitHub. Clone it and build it yourself.',
+        'Full React Native and Node code. Clone it and build it yourself.',
       link: { label: 'Open the repo', href: REPO_URL },
     },
     {
-      claim: 'Those screenshots are the actual app',
+      claim: 'The screens above come from the app',
       detail:
-        'The slides up top are real screens straight from the build, not mockups dropped into a phone frame.',
+        'Every slide up top is pulled straight from the running build.',
       link: null,
     },
     {
       claim: 'It runs on real services',
       detail:
-        'Photos upload to Cloudinary, and signing in sends a one time code to your email. None of it is faked.',
+        'Photos go to Cloudinary, and signing in sends a one time code to your email.',
       link: null,
     },
   ];
@@ -130,13 +130,13 @@ function App() {
           <div className="max-w-6xl mx-auto w-full px-6 py-24 grid md:grid-cols-[0.85fr_1.15fr] gap-12 md:gap-16">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--accent)] mb-5">
-                Proof
+                The details
               </p>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight leading-[1.15] mb-4">
-                It's a real app, not a concept.
+                What you're working with.
               </h2>
               <p className="text-[#99a1ad] leading-[1.6]">
-                Everything here you can go and check for yourself.
+                Install it, read the code, or just look around.
               </p>
             </div>
 
